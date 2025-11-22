@@ -1,5 +1,5 @@
 # Dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -61,3 +61,17 @@ uploads/
 .idea/
 *.swp
 *.swo
+
+# Old Django files (not needed)
+db.sqlite3
+manage.py
+Django_Application/
+detection/
+deepfake_app/
+github_assets/
+Model Creation/
+
+# Backup files
+*.backup
+*.bak
+*.tmp
