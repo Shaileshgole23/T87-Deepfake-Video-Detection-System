@@ -1,6 +1,6 @@
 """
-ML Model Loading and Inference
-Handles ResNeXt + LSTM model for deepfake detection
+ML Model for Deepfake Detection
+ResNeXt + LSTM Architecture
 """
 
 import torch
@@ -9,19 +9,17 @@ from torchvision import models, transforms
 import numpy as np
 from pathlib import Path
 from typing import Tuple, List
-import os
 
 class DeepfakeDetector(nn.Module):
-    """
-    ResNeXt-50 + LSTM model for deepfake detection
-    """
+    """ResNeXt-50 + LSTM model for deepfake detection"""
+    
     def __init__(self, num_classes=2, hidden_size=256, num_layers=2, dropout=0.3):
         super(DeepfakeDetector, self).__init__()
         
-        # ResNeXt-50 backbone for spatial features
+        # ResNeXt-50 backbone
         self.resnext = models.resnext50_32x4d(pretrained=True)
         num_features = self.resnext.fc.in_features
-        self.resnext.fc = nn.Identity()  # Remove final FC layer
+        self.resnext.fc = nn.Identity()
         
         # LSTM for temporal features
         self.lstm = nn.LSTM(
@@ -33,24 +31,18 @@ class DeepfakeDetector(nn.Module):
             bidirectional=True
         )
         
-        # Final classification layers
+        # Classification layers
         self.fc = nn.Sequential(
-            nn.Linear(hidden_size * 2, 128),  # *2 for bidirectional
+            nn.Linear(hidden_size * 2, 128),
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(128, num_classes)
         )
         
     def forward(self, x):
-        """
-        Args:
-            x: Tensor of shape (batch_size, sequence_length, channels, height, width)
-        Returns:
-            logits: Tensor of shape (batch_size, num_classes)
-        """
         batch_size, seq_len, c, h, w = x.size()
         
-        # Extract spatial features for each frame
+        # Extract spatial features
         x = x.view(batch_size * seq_len, c, h, w)
         features = self.resnext(x)
         features = features.view(batch_size, seq_len, -1)
@@ -58,22 +50,14 @@ class DeepfakeDetector(nn.Module):
         # Extract temporal features
         lstm_out, _ = self.lstm(features)
         
-        # Use last output for classification
+        # Classification
         last_output = lstm_out[:, -1, :]
         logits = self.fc(last_output)
         
         return logits
 
 def load_model(model_path: str = None) -> DeepfakeDetector:
-    """
-    Load the trained deepfake detection model
-    
-    Args:
-        model_path: Path to model checkpoint. If None, looks in default locations.
-    
-    Returns:
-        Loaded model in eval mode
-    """
+    """Load the trained model"""
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # Try to find model file
@@ -81,7 +65,6 @@ def load_model(model_path: str = None) -> DeepfakeDetector:
         possible_paths = [
             Path("models/model_best.pt"),
             Path("../models/model_best.pt"),
-            Path("api/models/model_best.pt"),
         ]
         
         for path in possible_paths:
@@ -97,7 +80,6 @@ def load_model(model_path: str = None) -> DeepfakeDetector:
         try:
             checkpoint = torch.load(model_path, map_location=device)
             
-            # Handle different checkpoint formats
             if isinstance(checkpoint, dict):
                 if 'model_state_dict' in checkpoint:
                     model.load_state_dict(checkpoint['model_state_dict'])
@@ -114,7 +96,6 @@ def load_model(model_path: str = None) -> DeepfakeDetector:
             print("  Using randomly initialized model")
     else:
         print("⚠ Model file not found. Using randomly initialized model.")
-        print("  For production, train and save a model to models/model_best.pt")
     
     model = model.to(device)
     model.eval()
@@ -122,9 +103,7 @@ def load_model(model_path: str = None) -> DeepfakeDetector:
     return model
 
 def get_transform():
-    """
-    Get image preprocessing transform
-    """
+    """Get image preprocessing transform"""
     return transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((224, 224)),
@@ -144,9 +123,9 @@ def predict_video(
     Predict if video is real or fake
     
     Args:
-        model: Trained DeepfakeDetector model
-        face_images: List of face images (numpy arrays)
-        device: Device to run inference on
+        model: Trained model
+        face_images: List of face images
+        device: Device to run on
     
     Returns:
         prediction: 0 for real, 1 for fake
@@ -170,7 +149,6 @@ def predict_video(
             elif img.shape[2] == 4:
                 img = img[:, :, :3]
             
-            # Apply transform
             tensor = transform(img)
             processed_images.append(tensor)
         except Exception as e:
@@ -181,7 +159,7 @@ def predict_video(
         raise ValueError("Failed to process any images")
     
     # Stack into sequence
-    sequence = torch.stack(processed_images).unsqueeze(0)  # (1, seq_len, C, H, W)
+    sequence = torch.stack(processed_images).unsqueeze(0)
     sequence = sequence.to(device)
     
     # Run inference
@@ -192,46 +170,3 @@ def predict_video(
         confidence = probabilities[0, prediction].item()
     
     return prediction, confidence
-
-def predict_batch(
-    model: DeepfakeDetector,
-    video_sequences: List[List[np.ndarray]],
-    device: str = None
-) -> List[Tuple[int, float]]:
-    """
-    Predict multiple videos in batch
-    
-    Args:
-        model: Trained DeepfakeDetector model
-        video_sequences: List of video sequences (each is a list of face images)
-        device: Device to run inference on
-    
-    Returns:
-        List of (prediction, confidence) tuples
-    """
-    results = []
-    
-    for sequence in video_sequences:
-        try:
-            pred, conf = predict_video(model, sequence, device)
-            results.append((pred, conf))
-        except Exception as e:
-            print(f"Error predicting video: {e}")
-            results.append((0, 0.5))  # Default to uncertain
-    
-    return results
-
-# Example usage
-if __name__ == "__main__":
-    # Test model loading
-    print("Testing model loading...")
-    model = load_model()
-    print(f"Model device: {next(model.parameters()).device}")
-    print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
-    
-    # Test inference with dummy data
-    print("\nTesting inference...")
-    dummy_sequence = [np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8) for _ in range(40)]
-    prediction, confidence = predict_video(model, dummy_sequence)
-    print(f"Prediction: {'FAKE' if prediction == 1 else 'REAL'}")
-    print(f"Confidence: {confidence:.2%}")
