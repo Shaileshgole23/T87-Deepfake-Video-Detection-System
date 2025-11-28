@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Deepfake detection using Deep Learning (ResNext and LSTM)
 
 
@@ -45,6 +46,8 @@ Deepfake_detection_using_deep_learning
 - [X] Dockerizing the app
 - [X] Enabling working of project on Non Cuda Computers. i.e on normal or AMD GPUs
 
+=======
+>>>>>>> a54bfbce7fd184452feba8e4bbd0f6693ff34a09
 # 🚀 Deepfake Video Detection System
 
 ---
@@ -145,3 +148,11 @@ Deepfake_detection_using_deep_learning
 - CICD via GitHub  
 - Weekly standups & mentor feedback
 
+<<<<<<< HEAD
+=======
+---
+
+> *Made with ❤️ by Team T-87 from GLA University*
+
+
+>>>>>>> a54bfbce7fd184452feba8e4bbd0f6693ff34a09
