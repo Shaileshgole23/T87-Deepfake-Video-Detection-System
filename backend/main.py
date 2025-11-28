@@ -6,6 +6,7 @@ Advanced Multi-Modal Architecture for Real Deepfake Detection
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 import os
 import tempfile
 import shutil
@@ -38,34 +39,19 @@ except ImportError as e:
 except Exception as e:
     print(f"⚠ Error loading ML modules: {e}")
 
-app = FastAPI(
-    title="Deepfake Detection API - Vision Transformer",
-    description="Advanced AI-powered deepfake detection using Vision Transformer + Temporal Attention",
-    version="4.0.0"
-)
-
-# CORS configuration
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Create necessary directories
 UPLOAD_DIR = Path("temp_uploads")
 PROCESSED_DIR = Path("processed_media")
 UPLOAD_DIR.mkdir(exist_ok=True)
 PROCESSED_DIR.mkdir(exist_ok=True)
 
-# Load Vision Transformer model on startup
-@app.on_event("startup")
-async def startup_event():
+# Lifespan event handler
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Initialize model and clean up old files"""
     global model, ML_AVAILABLE
     
+    # Startup
     if ML_AVAILABLE:
         try:
             print("🚀 Loading Vision Transformer model...")
@@ -83,6 +69,29 @@ async def startup_event():
                     file.unlink()
     except Exception as e:
         print(f"Cleanup error: {e}")
+    
+    yield
+    
+    # Shutdown (cleanup if needed)
+    pass
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Deepfake Detection API - Vision Transformer",
+    description="Advanced AI-powered deepfake detection using Vision Transformer + Temporal Attention",
+    version="4.0.0",
+    lifespan=lifespan
+)
+
+# CORS configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def root():
@@ -444,7 +453,7 @@ if __name__ == "__main__":
     print(f"{'='*60}\n")
     
     uvicorn.run(
-        "main_vit:app",
+        "main:app",
         host="0.0.0.0",
         port=port,
         log_level="info",
