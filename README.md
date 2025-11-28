@@ -1,355 +1,137 @@
-# 🎭 Deepfake Video Detection System
+# Deepfake Video Detection System
 
-> **A production-ready, AI-powered deepfake detection web application** that uses advanced deep learning to identify manipulated videos with 93%+ accuracy.
+A real-time deepfake detection system using Vision Transformer and temporal analysis. Built for my final year project.
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688)](https://fastapi.tiangolo.com/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.2-EE4C2C)](https://pytorch.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+## What It Does
 
-![Deepfake Detection Demo](https://via.placeholder.com/1200x600/6b21a8/ffffff?text=Deepfake+Detection+System)
+Analyzes videos to detect if they're real or AI-generated deepfakes. Uses multiple detection methods:
+- Vision Transformer for facial analysis
+- Temporal consistency checking
+- Frequency domain analysis
+- Multi-scale face detection
 
-## ✨ Features
+## Tech Stack
 
-### 🎨 Frontend
-- ✅ **Modern, Professional UI** - Glassmorphism design with smooth animations
-- ✅ **Fully Responsive** - Perfect on mobile, tablet, and desktop
-- ✅ **Drag & Drop Upload** - Intuitive video file upload
-- ✅ **Real-time Progress** - Visual feedback during processing
-- ✅ **Interactive Results** - Charts, graphs, and detailed analysis
-- ✅ **Multiple Pages** - Landing, Upload, Results, How It Works, Model Info, About
+**Frontend:** Next.js 14, React, TypeScript, Tailwind CSS  
+**Backend:** FastAPI, PyTorch, OpenCV  
+**ML Model:** Vision Transformer + Temporal Attention
 
-### 🧠 Backend
-- ✅ **FastAPI Server** - High-performance async Python backend
-- ✅ **ML Model Integration** - ResNeXt + LSTM architecture (93%+ accuracy)
-- ✅ **Video Processing** - Frame extraction with OpenCV
-- ✅ **Face Detection** - Advanced face detection with dlib
-- ✅ **Mock Mode** - Works without trained model for demo purposes
-- ✅ **Auto Cleanup** - Automatic temporary file management
+## Quick Setup
 
-### 🚀 Deployment
-- ✅ **Vercel Ready** - One-click deployment to Vercel
-- ✅ **Railway Compatible** - Easy backend deployment
-- ✅ **Docker Support** - Containerized deployment option
-- ✅ **CI/CD Ready** - Automatic deployments on push
-- ✅ **Scalable** - Built to handle growth
+### Prerequisites
+- Python 3.11+
+- Node.js 18+
+- 4GB RAM minimum
 
-## 🏗️ Architecture
+### Installation
 
-```
-┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│   Next.js 14    │─────▶│  API Routes      │─────▶│  FastAPI        │
-│   Frontend      │      │  (Serverless)    │      │  ML Backend     │
-│   (Vercel)      │◀─────│  (Vercel Edge)   │◀─────│  (Railway/DO)   │
-└─────────────────┘      └──────────────────┘      └─────────────────┘
-```
-
-## 🚀 Quick Start
-
-### ⚡ Fastest Setup (Windows)
-
+1. Clone and install dependencies:
 ```bash
-# Run automated setup
-setup.bat
+# Backend
+cd backend
+pip install -r requirements.txt
 
-# Then start the servers (2 terminals)
-# Terminal 1: cd api && venv\Scripts\activate && python main.py
-# Terminal 2: npm run dev
-```
-
-### 📦 Manual Setup
-
-**Prerequisites:** Node.js 18+, Python 3.8+
-
-```bash
-# 1. Install dependencies
+# Frontend
 npm install
-cd api && pip install -r requirements.txt && cd ..
-
-# 2. Setup environment
-cp .env.example .env.local
-cp api/.env.example api/.env
-
-# 3. Run servers (2 terminals)
-# Terminal 1: cd api && python main.py
-# Terminal 2: npm run dev
-
-# 4. Open http://localhost:3000
 ```
 
-### 🐳 Docker Setup
+2. Start servers:
+```bash
+# Backend (terminal 1)
+cd backend
+python main.py
+
+# Frontend (terminal 2)
+npm run dev
+```
+
+3. Open http://localhost:3001
+
+## How It Works
+
+### Frame Extraction
+Videos are sampled at regular intervals. For a 10-second video at 30fps (300 frames), we extract 30 frames for analysis.
+
+### Face Detection
+Uses OpenCV Haar Cascades with multi-scale detection. Detected faces are cropped and resized to 224x224 for the model.
+
+### Analysis Pipeline
+1. **Spatial Analysis** - Vision Transformer examines facial features
+2. **Temporal Analysis** - Checks consistency across frames
+3. **Frequency Analysis** - DCT transform to detect compression artifacts
+4. **Multi-Modal Fusion** - Combines all signals for final prediction
+
+## Project Structure
+
+```
+├── backend/
+│   ├── main.py              # FastAPI server
+│   ├── vit_model.py         # Vision Transformer model
+│   ├── enhanced_processor.py # Video processing
+│   └── requirements.txt
+├── app/
+│   ├── page.tsx            # Main page
+│   ├── components/         # React components
+│   └── api/predict/        # API route
+└── package.json
+```
+
+## Training (Optional)
+
+The model needs training on deepfake datasets to work properly. Currently uses mock predictions.
+
+To train:
+1. Download FaceForensics++ dataset
+2. Organize videos into `data/train/real` and `data/train/fake`
+3. Run: `python backend/train_vit.py --epochs 50`
+
+Expected accuracy after training: 90-95%
+
+## API Usage
 
 ```bash
-docker-compose up --build
-# Open http://localhost:3000
+curl -X POST http://localhost:8000/api/predict/ \
+  -F "file=@video.mp4" \
+  -F "num_frames=30"
 ```
 
-📖 **Detailed Setup**: See [QUICK_START.md](QUICK_START.md)
-
-## 📦 Project Structure
-
-```
-deepfake-detection/
-├── app/                      # Next.js App Router
-│   ├── api/                  # API route handlers
-│   │   └── predict/          # Video prediction endpoint
-│   ├── about/                # About page
-│   ├── how-it-works/         # How it works page
-│   ├── model-info/           # Model information page
-│   ├── components/           # React components
-│   │   ├── Navbar.tsx
-│   │   ├── Footer.tsx
-│   │   ├── UploadSection.tsx
-│   │   ├── ResultsSection.tsx
-│   │   └── FeatureCard.tsx
-│   ├── layout.tsx            # Root layout
-│   ├── page.tsx              # Home page
-│   └── globals.css           # Global styles
-├── api/                      # FastAPI backend
-│   ├── main.py               # FastAPI application
-│   ├── ml_model.py           # ML model logic
-│   ├── video_processor.py    # Video processing
-│   └── requirements.txt      # Python dependencies
-├── public/                   # Static assets
-│   ├── images/
-│   └── diagrams/
-├── lib/                      # Utility functions
-├── models/                   # ML model files
-├── vercel.json              # Vercel configuration
-├── next.config.js           # Next.js configuration
-└── package.json             # Node dependencies
+Response:
+```json
+{
+  "output": "FAKE",
+  "confidence": 87.5,
+  "analysis": {
+    "temporal_consistency": 65.8,
+    "compression_artifacts": 24.7,
+    "warning_flags": ["Temporal inconsistency detected"]
+  }
+}
 ```
 
-## 🎨 Tech Stack
+## Deployment
 
-### Frontend
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **Framer Motion** - Animations
-- **React Dropzone** - File uploads
-- **Lucide React** - Icons
-- **Recharts** - Data visualization
+See `AZURE_DEPLOY.md` for Azure deployment instructions.
 
-### Backend
-- **FastAPI** - High-performance Python API
-- **PyTorch** - Deep learning framework
-- **OpenCV** - Video processing
-- **Face Recognition** - Face detection
-- **Uvicorn** - ASGI server
+## Known Issues
 
-## 🔧 Configuration
+- Model requires training on real data (currently mock predictions)
+- CPU inference is slow (3-5 seconds per video)
+- Large videos (>100MB) may timeout
 
-### Environment Variables
+## Future Improvements
 
-**Frontend (.env.local)**
-```env
-NEXT_PUBLIC_API_URL=https://your-backend-url.com
-```
+- [ ] Train on FaceForensics++ dataset
+- [ ] Add GPU support
+- [ ] Implement video streaming
+- [ ] Add batch processing
+- [ ] Improve face detection accuracy
 
-**Backend (api/.env)**
-```env
-DEBUG=False
-ALLOWED_ORIGINS=https://your-vercel-app.vercel.app
-MODEL_PATH=./models/model_best.pt
-MAX_VIDEO_SIZE=100
-```
+## License
 
-## 🚀 Deployment
+MIT
 
-### Deploy to Vercel (Frontend + API Routes)
-
-1. **Connect GitHub repository to Vercel**
-
-2. **Configure build settings**:
-   - Framework: Next.js
-   - Build Command: `npm run build`
-   - Output Directory: `.next`
-
-3. **Set environment variables** in Vercel dashboard:
-   ```
-   NEXT_PUBLIC_API_URL=https://your-backend-url.com
-   ```
-
-4. **Deploy**:
-   ```bash
-   vercel --prod
-   ```
-
-### Deploy Backend (Railway - Recommended)
-
-1. **Install Railway CLI**:
-   ```bash
-   npm install -g @railway/cli
-   ```
-
-2. **Deploy**:
-   ```bash
-   cd api
-   railway login
-   railway init
-   railway up
-   ```
-
-3. **Set environment variables** in Railway dashboard
-
-### Alternative: Deploy Backend to DigitalOcean
-
-1. Create a new App
-2. Connect your GitHub repository
-3. Select the `api` directory
-4. Use the provided Dockerfile
-5. Deploy
-
-## 📊 Model Information
-
-### Architecture
-- **Base Model**: ResNeXt-50
-- **Temporal Model**: LSTM (2 layers)
-- **Input**: 40-frame sequences
-- **Output**: Binary classification (Real/Fake)
-
-### Performance
-- **Accuracy**: 93%+
-- **Processing Time**: ~5-10 seconds per video
-- **Supported Formats**: MP4, AVI, MOV, MKV
-
-### Training Dataset
-- Trained on FaceForensics++ dataset
-- 1000+ real and fake video samples
-- Augmented with various deepfake techniques
-
-## 🎯 Features Breakdown
-
-### 1. Landing Page
-- Hero section with animated gradient background
-- Feature cards highlighting key capabilities
-- Call-to-action buttons
-- Responsive design
-
-### 2. Video Upload
-- Drag-and-drop interface
-- File validation (type, size)
-- Preview before processing
-- Adjustable sequence length
-
-### 3. Processing
-- Real-time progress indicator
-- Animated loading states
-- Error handling with user feedback
-
-### 4. Results Display
-- Clear Real/Fake classification
-- Confidence percentage
-- Frame-by-frame visualization
-- Detected faces gallery
-- Downloadable report
-
-### 5. Information Pages
-- **About**: Project overview and mission
-- **How It Works**: Step-by-step explanation
-- **Model Info**: Technical details and architecture
-
-## 🔒 Security
-
-- File type validation
-- Size limit enforcement (100MB)
-- CORS configuration
-- Input sanitization
-- Temporary file cleanup
-- Rate limiting (production)
-
-## ⚡ Performance Optimizations
-
-### Frontend
-- Code splitting and lazy loading
-- Image optimization with Next.js Image
-- Bundle size optimization
-- Caching strategies
-
-### Backend
-- Async processing
-- Efficient memory management
-- Model caching
-- Batch processing support
-
-## 🧪 Testing
-
-```bash
-# Frontend tests
-npm run test
-
-# Backend tests
-cd api && pytest
-
-# Linting
-npm run lint
-```
-
-## 📈 Monitoring
-
-- Vercel Analytics for frontend
-- Error tracking with Sentry (optional)
-- API performance monitoring
-- Model inference time tracking
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file
-
-## 🆘 Support
-
-- 📧 Open an issue on GitHub
-- 📖 Check the documentation
-- 💬 Join our Discord community
-
-## 📸 Project Showcase
-
-### Why This Project Stands Out
-
-✨ **Production-Ready** - Not just a demo, fully deployable to Vercel  
-🎨 **Beautiful Design** - Modern glassmorphism UI with smooth animations  
-🧠 **Real AI/ML** - Actual deep learning model integration  
-📱 **Fully Responsive** - Works perfectly on all devices  
-📚 **Well-Documented** - Comprehensive guides and clean code  
-🚀 **Fast & Scalable** - Optimized for performance  
-🔒 **Secure** - Multiple security layers implemented  
-
-### Perfect For
-
-- 🎓 **Academic Projects** - Impress professors and peers
-- 💼 **Job Interviews** - Showcase your full-stack skills
-- 🏆 **Hackathons** - Win with this impressive project
-- 🚀 **Portfolio** - Stand out to employers
-- 📚 **Learning** - Master modern web development
-
-## 🎉 Acknowledgments
+## Acknowledgments
 
 - FaceForensics++ dataset
-- PyTorch community
-- Next.js team
-- Vercel platform
-
-## 🌟 Show Your Support
-
-If this project helped you:
-- ⭐ Star this repository
-- 🐛 Report bugs and issues
-- 💡 Suggest new features
-- 🤝 Contribute improvements
-- 📢 Share with others
-
----
-
-**Built with ❤️ for detecting deepfakes and protecting digital authenticity**
-
-🚀 **Ready to deploy!** Follow the [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) to get your app live on Vercel in minutes.
+- PyTorch Vision Transformer implementation
+- OpenCV for face detection

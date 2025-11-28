@@ -1,5 +1,5 @@
-# FastAPI Backend - Railway Compatible
-# NO dlib, NO face-recognition, NO CUDA, NO NVIDIA packages
+# FastAPI Backend - Vision Transformer Edition
+# Railway Compatible - NO dlib, NO CUDA required
 
 # Web Framework
 fastapi==0.104.1
@@ -16,8 +16,10 @@ torchvision==0.17.0+cpu
 opencv-python==4.10.0.84
 Pillow==10.3.0
 
-# Data Processing
+# Data Processing & Analysis
 numpy==1.26.4
+scipy==1.11.4
 
-# Note: Using OpenCV Haar Cascades for face detection
+# Note: Vision Transformer + Temporal Attention + Frequency Analysis
+# Multi-scale face detection with OpenCV Haar Cascades
 # NO dlib, NO face-recognition, NO CMake needed!
