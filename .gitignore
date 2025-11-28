@@ -1,0 +1,27 @@
+# ignore virtual envs
+venv/
+.env/
+
+# ignore model weights
+*.h5
+*.pt
+*.pkl
+
+# ignore datasets and media
+*.mp4
+*.avi
+*.mov
+*.zip
+*.rar
+*.npy
+*.npz
+*.csv
+
+# ignore temp/system
+__pycache__/
+*.log
+
+
+
+
+
