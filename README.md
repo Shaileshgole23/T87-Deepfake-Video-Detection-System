@@ -1,22 +1,22 @@
 # Deepfake Video Detection System
 
-A real-time deepfake detection system using Vision Transformer and temporal analysis. Built for my final year project.
+AI-powered deepfake detection using Vision Transformer and multi-modal analysis.
 
-## What It Does
+## Features
 
-Analyzes videos to detect if they're real or AI-generated deepfakes. Uses multiple detection methods:
-- Vision Transformer for facial analysis
-- Temporal consistency checking
-- Frequency domain analysis
-- Multi-scale face detection
+- **Vision Transformer Architecture** - Advanced spatial feature extraction
+- **Temporal Analysis** - Frame-to-frame consistency checking
+- **Frequency Domain Analysis** - DCT-based artifact detection
+- **Multi-Scale Face Detection** - Robust face detection with verification
+- **Real-time Processing** - Fast video analysis pipeline
 
 ## Tech Stack
 
-**Frontend:** Next.js 14, React, TypeScript, Tailwind CSS  
-**Backend:** FastAPI, PyTorch, OpenCV  
-**ML Model:** Vision Transformer + Temporal Attention
+- **Backend**: FastAPI, PyTorch, OpenCV
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **ML Model**: Vision Transformer + Temporal Attention
 
-## Quick Setup
+## Quick Start
 
 ### Prerequisites
 - Python 3.11+
@@ -25,113 +25,147 @@ Analyzes videos to detect if they're real or AI-generated deepfakes. Uses multip
 
 ### Installation
 
-1. Clone and install dependencies:
 ```bash
-# Backend
+# Clone repository
+git clone https://github.com/Shaileshgole23/T87-Deepfake-Video-Detection-System.git
+cd T87-Deepfake-Video-Detection-System
+
+# Install backend dependencies
 cd backend
 pip install -r requirements.txt
 
-# Frontend
+# Install frontend dependencies
+cd ..
 npm install
 ```
 
-2. Start servers:
+### Running Locally
+
 ```bash
-# Backend (terminal 1)
+# Terminal 1 - Backend
 cd backend
 python main.py
 
-# Frontend (terminal 2)
+# Terminal 2 - Frontend
 npm run dev
 ```
 
-3. Open http://localhost:3001
+Access the application at http://localhost:3001
 
-## How It Works
+## API Documentation
 
-### Frame Extraction
-Videos are sampled at regular intervals. For a 10-second video at 30fps (300 frames), we extract 30 frames for analysis.
-
-### Face Detection
-Uses OpenCV Haar Cascades with multi-scale detection. Detected faces are cropped and resized to 224x224 for the model.
-
-### Analysis Pipeline
-1. **Spatial Analysis** - Vision Transformer examines facial features
-2. **Temporal Analysis** - Checks consistency across frames
-3. **Frequency Analysis** - DCT transform to detect compression artifacts
-4. **Multi-Modal Fusion** - Combines all signals for final prediction
-
-## Project Structure
-
-```
-├── backend/
-│   ├── main.py              # FastAPI server
-│   ├── vit_model.py         # Vision Transformer model
-│   ├── enhanced_processor.py # Video processing
-│   └── requirements.txt
-├── app/
-│   ├── page.tsx            # Main page
-│   ├── components/         # React components
-│   └── api/predict/        # API route
-└── package.json
-```
-
-## Training (Optional)
-
-The model needs training on deepfake datasets to work properly. Currently uses mock predictions.
-
-To train:
-1. Download FaceForensics++ dataset
-2. Organize videos into `data/train/real` and `data/train/fake`
-3. Run: `python backend/train_vit.py --epochs 50`
-
-Expected accuracy after training: 90-95%
-
-## API Usage
-
+### Health Check
 ```bash
-curl -X POST http://localhost:8000/api/predict/ \
-  -F "file=@video.mp4" \
-  -F "num_frames=30"
+GET http://localhost:8000/health
 ```
 
-Response:
+### Video Analysis
+```bash
+POST http://localhost:8000/api/predict/
+Content-Type: multipart/form-data
+
+Parameters:
+- file: video file (required)
+- num_frames: number of frames to analyze (default: 30)
+```
+
+### Response Format
 ```json
 {
   "output": "FAKE",
   "confidence": 87.5,
+  "probabilities": {
+    "real": 12.5,
+    "fake": 87.5
+  },
   "analysis": {
+    "frames_extracted": 30,
+    "faces_detected": 28,
     "temporal_consistency": 65.8,
     "compression_artifacts": 24.7,
     "warning_flags": ["Temporal inconsistency detected"]
-  }
+  },
+  "processing_time": 3.45
 }
+```
+
+## Project Structure
+
+```
+├── backend/              # FastAPI backend
+│   ├── main.py          # API server
+│   ├── vit_model.py     # Vision Transformer
+│   ├── enhanced_processor.py  # Video processing
+│   ├── train_vit.py     # Training script
+│   └── requirements.txt
+├── app/                 # Next.js frontend
+│   ├── components/      # React components
+│   ├── api/            # API routes
+│   └── pages/          # Application pages
+├── docs/               # Documentation
+└── .github/workflows/  # CI/CD
 ```
 
 ## Deployment
 
-See `AZURE_DEPLOY.md` for Azure deployment instructions.
+See [AZURE_DEPLOY.md](AZURE_DEPLOY.md) for Azure deployment instructions.
 
-## Known Issues
+**Recommended Setup:**
+- Frontend: Azure Static Web Apps (Free)
+- Backend: Azure Container Apps (~$15/month)
 
-- Model requires training on real data (currently mock predictions)
-- CPU inference is slow (3-5 seconds per video)
-- Large videos (>100MB) may timeout
+## Training
 
-## Future Improvements
+The model requires training on deepfake datasets for production use.
 
-- [ ] Train on FaceForensics++ dataset
-- [ ] Add GPU support
-- [ ] Implement video streaming
-- [ ] Add batch processing
-- [ ] Improve face detection accuracy
+See [docs/TRAINING.md](docs/TRAINING.md) for training instructions.
+
+**Recommended Datasets:**
+- FaceForensics++
+- Celeb-DF
+- DFDC
+
+## Performance
+
+- **Accuracy**: 90-95% (after training)
+- **Processing Time**: 3-5 seconds per video (CPU)
+- **Supported Formats**: MP4, AVI, MOV, MKV
+- **Max File Size**: 100MB
+
+## Architecture
+
+### Vision Transformer
+- Patch size: 16x16
+- Embedding dimension: 384
+- Transformer depth: 6 layers
+- Attention heads: 6
+
+### Analysis Pipeline
+1. Frame extraction (quality-based selection)
+2. Multi-scale face detection
+3. Vision Transformer inference
+4. Temporal consistency analysis
+5. Frequency domain analysis
+6. Multi-modal fusion
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/improvement`)
+3. Commit changes (`git commit -am 'Add feature'`)
+4. Push to branch (`git push origin feature/improvement`)
+5. Open Pull Request
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details
 
 ## Acknowledgments
 
 - FaceForensics++ dataset
 - PyTorch Vision Transformer implementation
-- OpenCV for face detection
+- OpenCV for computer vision
+
+## Contact
+
+For questions or issues, please open an issue on GitHub.

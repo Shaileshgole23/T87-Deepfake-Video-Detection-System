@@ -1,58 +1,50 @@
 # Dependencies
 node_modules/
 backend/venv/
-backend/env/
 backend/__pycache__/
-__pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
 
-# Next.js
-.next/
-out/
-build/
-dist/
-
-# Environment variables
+# Environment
 .env
 .env.local
 .env*.local
-!.env.example
 
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # OS
 .DS_Store
 Thumbs.db
-*.swp
-*.swo
 
 # IDE
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
 
 # Temporary files
 backend/temp_uploads/
 backend/processed_media/
 backend/models/*.pt
-backend/models/*.pth
-*.tmp
 
 # Testing
 coverage/
 .pytest_cache/
-.coverage
-htmlcov/
+__tests__/
 
-# Production
-*.pid
-*.seed
-*.pid.lock
+# Build
+.next/
+out/
+build/
+dist/
